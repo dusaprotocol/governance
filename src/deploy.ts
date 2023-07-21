@@ -7,10 +7,8 @@ import { Args, fromMAS } from '@massalabs/massa-web3';
 
 dotenv.config();
 
-const publicApi = process.env.JSON_RPC_URL_PUBLIC;
-if (!publicApi) {
-  throw new Error('Missing JSON_RPC_URL_PUBLIC in .env file');
-}
+const publicApi = 'https://buildnet.massa.net/api/v2';
+
 const secretKey = process.env.WALLET_SECRET_KEY;
 if (!secretKey) {
   throw new Error('Missing WALLET_SECRET_KEY in .env file');

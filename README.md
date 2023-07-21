@@ -1,4 +1,11 @@
-# My Massa Smart-contract Project
+# Dusa Protocol Governance
+
+## Introduction
+
+This is based on Compound's governance
+- https://wiki.tally.xyz/docs/compound-governor
+- https://docs.compound.finance/v2/governance/
+  
 
 ## Build
 
