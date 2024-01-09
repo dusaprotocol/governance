@@ -36,7 +36,7 @@ export function setVotingDelay(newVotingDelay: u256): void {
 
 function onlyGovernance(): void {
   assert(
-    Context.sender() == Context.getContractAddress(),
+    Context.caller() == Context.callee(),
     'GovernorSettings: only governance',
   );
 }
