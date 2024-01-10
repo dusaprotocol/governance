@@ -1,5 +1,7 @@
 import {
   Args,
+  Result,
+  Serializable,
   byteToU8,
   stringToBytes,
   u32ToBytes,
@@ -11,13 +13,12 @@ import {
   Storage,
   generateEvent,
 } from '@massalabs/massa-as-sdk';
-import { PersistentMap } from '@massalabs/massa-as-sdk/assembly/collections';
-import { IERC20 } from '@dusalabs/core';
+import { PersistentMap, IERC20 } from '@dusalabs/core';
 import { u256 } from 'as-bignum/assembly/integer/u256';
 
 // STORAGE
 
-class Proposal {
+class Proposal implements Serializable {
   constructor(
     public proposer: string = '',
     public description: string = '',
@@ -28,6 +29,32 @@ class Proposal {
     public canceled: bool = false,
     public executed: bool = false,
   ) {}
+
+  serialize(): StaticArray<u8> {
+    return new Args()
+      .add(this.proposer)
+      .add(this.description)
+      .add(this.startBlock)
+      .add(this.endBlock)
+      .add(this.forVotes)
+      .add(this.againstVotes)
+      .add(this.canceled)
+      .add(this.executed)
+      .serialize();
+  }
+
+  deserialize(data: StaticArray<u8>, offset: i32): Result<i32> {
+    const args = new Args(data, offset);
+    this.proposer = args.nextString().unwrap();
+    this.description = args.nextString().unwrap();
+    this.startBlock = args.nextU32().unwrap();
+    this.endBlock = args.nextU32().unwrap();
+    this.forVotes = args.nextU64().unwrap();
+    this.againstVotes = args.nextU64().unwrap();
+    this.canceled = args.nextBool().unwrap();
+    this.executed = args.nextBool().unwrap();
+    return new Result(args.offset);
+  }
 }
 const PROPOSALS = new PersistentMap<u32, Proposal>('p');
 const PROPOSAL_COUNT = stringToBytes('PROPOSAL_COUNT');
@@ -58,6 +85,7 @@ export function propose(bs: StaticArray<u8>): void {
   const proposalCount = byteToU8(Storage.get(PROPOSAL_COUNT));
   const proposal = new Proposal(proposer, description, startBlock, endBlock);
   PROPOSALS.set(proposalCount, proposal);
+  Storage.set(PROPOSAL_COUNT, u32ToBytes(proposalCount + 1));
 }
 
 export function vote(bs: StaticArray<u8>): void {
@@ -65,7 +93,11 @@ export function vote(bs: StaticArray<u8>): void {
   const proposalId = args.nextU32().unwrap();
   const support = args.nextBool().unwrap();
   assert(!hasVoted(proposalId, Context.caller().toString()), 'VOTED');
-  const proposal = PROPOSALS.getSome(proposalId).unwrap();
+  assert(
+    proposalId < byteToU8(Storage.get(PROPOSAL_COUNT)),
+    'INVALID_PROPOSAL_ID',
+  );
+  const proposal = PROPOSALS.get(proposalId, new Proposal());
   assert(proposal.startBlock < Context.currentPeriod(), 'NOT_STARTED');
   assert(proposal.endBlock > Context.currentPeriod(), 'ENDED');
   const voter = Context.caller();
@@ -96,7 +128,7 @@ function createKey(proposalId: u32, voter: string): string {
 
 export function hasVoted(proposalId: u32, voter: string): bool {
   const key = createKey(proposalId, voter);
-  return HAS_VOTED.contains(key) ? HAS_VOTED.getSome(key).unwrap() : false;
+  return HAS_VOTED.contains(key) ? HAS_VOTED.getSome(key) : false;
 }
 
 function voteToken(): IERC20 {
