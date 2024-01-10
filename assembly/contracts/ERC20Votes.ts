@@ -28,7 +28,7 @@ export function delegate(address: Address): void {
 }
 
 function _delegate(delegator: string, delegatee: string): void {
-  const currentDelegate = delegates.getSome(delegator).unwrap();
+  const currentDelegate = delegates.getSome(delegator);
   const delegatorBalance = _balance(new Address(delegator));
   delegates.set(delegator, delegatee);
 
@@ -64,10 +64,7 @@ function _writeCheckpoint(
     'Uni::_writeCheckpoint: block number exceeds 32 bits',
   );
   const blockNumber: u32 = Context.currentPeriod();
-  const checkpoint = checkpoints
-    .getSome(createCheckpointKey(delegatee, nCheckpoints - 1))
-    .unwrap();
-
+  const checkpoint = getCheckpoint(delegatee, nCheckpoints - 1);
   if (nCheckpoints > 0 && checkpoint.fromBlock == blockNumber) {
     checkpoint.votes = newVotes;
   } else {
