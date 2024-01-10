@@ -5,7 +5,12 @@ import {
   u32ToBytes,
   u8toByte,
 } from '@massalabs/as-types';
-import { Address, Context, Storage } from '@massalabs/massa-as-sdk';
+import {
+  Address,
+  Context,
+  Storage,
+  generateEvent,
+} from '@massalabs/massa-as-sdk';
 import { PersistentMap } from '@massalabs/massa-as-sdk/assembly/collections';
 import { IERC20 } from '@dusalabs/core';
 import { u256 } from 'as-bignum/assembly/integer/u256';
@@ -35,7 +40,7 @@ const HAS_VOTED = new PersistentMap<string, bool>('v');
 // CONSTRUCTOR
 
 export function constructor(bs: StaticArray<u8>): void {
-  assert(Context.isDeployingContract());
+  // assert(Context.isDeployingContract());
   const voteToken = new Args(bs).nextString().unwrap();
   Storage.set(VOTE_TOKEN, voteToken);
   Storage.set(PROPOSE_THRESHOLD, u8toByte(3)); // 3%
@@ -43,15 +48,7 @@ export function constructor(bs: StaticArray<u8>): void {
 }
 
 export function propose(bs: StaticArray<u8>): void {
-  const totalSupply = voteToken().totalSupply();
-  const threshold = u256.div(
-    totalSupply,
-    u256.from(100 * byteToU8(Storage.get(PROPOSE_THRESHOLD))),
-  );
-  assert(
-    voteToken().balanceOf(Context.caller()) > threshold,
-    'PROPOSE_THRESHOLD',
-  );
+  assert(canPropose(), 'NOT_ENOUGH_VOTING_POWER');
 
   const args = new Args(bs);
   const description = args.nextString().unwrap();
@@ -84,11 +81,20 @@ export function vote(bs: StaticArray<u8>): void {
 
 // HELPERS
 
+export function canPropose(): bool {
+  const totalSupply = voteToken().totalSupply();
+  const threshold = u256.div(
+    u256.mul(totalSupply, u256.from(byteToU8(Storage.get(PROPOSE_THRESHOLD)))),
+    u256.from(100),
+  );
+  return voteToken().balanceOf(Context.caller()) > threshold;
+}
+
 function createKey(proposalId: u32, voter: string): string {
   return proposalId.toString() + voter;
 }
 
-function hasVoted(proposalId: u32, voter: string): bool {
+export function hasVoted(proposalId: u32, voter: string): bool {
   const key = createKey(proposalId, voter);
   return HAS_VOTED.contains(key) ? HAS_VOTED.getSome(key).unwrap() : false;
 }
