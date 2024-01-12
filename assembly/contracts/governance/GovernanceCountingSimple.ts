@@ -12,11 +12,13 @@ class ProposalVote {
     public readonly againstVotes: u256,
     public readonly forVotes: u256,
     public readonly abstainVotes: u256,
-    public readonly hasVoted: PersistentMap<string, boolean>,
+    public readonly hasVoted: Array<string>,
   ) {}
 }
 
-const _proposalVotes = new PersistentMap<u256, ProposalVote>('proposalVotes');
+export const _proposalVotes = new PersistentMap<u256, ProposalVote>(
+  'proposalVotes',
+);
 
 export function COUNTING_MODE(): string {
   return 'support=bravo&quorum=for,abstain';
@@ -27,5 +29,5 @@ export function hasVoted(proposalId: u256, account: string): boolean {
   if (proposalVote == null) {
     return false;
   }
-  return proposalVote.hasVoted.get(account) == true;
+  return proposalVote.hasVoted.includes(account) == true;
 }
