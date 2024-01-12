@@ -21,9 +21,10 @@ import { u256 } from 'as-bignum/assembly/integer/u256';
 class Proposal implements Serializable {
   constructor(
     public proposer: string = '',
+    public title: string = '',
     public description: string = '',
-    public startBlock: u32 = 0,
-    public endBlock: u32 = 0,
+    public startBlock: u64 = 0,
+    public endBlock: u64 = 0,
     public forVotes: u64 = 0,
     public againstVotes: u64 = 0,
     public canceled: bool = false,
@@ -33,6 +34,7 @@ class Proposal implements Serializable {
   serialize(): StaticArray<u8> {
     return new Args()
       .add(this.proposer)
+      .add(this.title)
       .add(this.description)
       .add(this.startBlock)
       .add(this.endBlock)
@@ -46,9 +48,10 @@ class Proposal implements Serializable {
   deserialize(data: StaticArray<u8>, offset: i32): Result<i32> {
     const args = new Args(data, offset);
     this.proposer = args.nextString().unwrap();
+    this.title = args.nextString().unwrap();
     this.description = args.nextString().unwrap();
-    this.startBlock = args.nextU32().unwrap();
-    this.endBlock = args.nextU32().unwrap();
+    this.startBlock = args.nextU64().unwrap();
+    this.endBlock = args.nextU64().unwrap();
     this.forVotes = args.nextU64().unwrap();
     this.againstVotes = args.nextU64().unwrap();
     this.canceled = args.nextBool().unwrap();
@@ -79,12 +82,13 @@ export function propose(bs: StaticArray<u8>): void {
   assert(canPropose(), 'NOT_ENOUGH_VOTING_POWER');
 
   const args = new Args(bs);
+  const title = args.nextString().unwrap();
   const description = args.nextString().unwrap();
   const startBlock = args.nextU32().unwrap();
   const endBlock = args.nextU32().unwrap();
   const proposer = Context.caller().toString();
   const proposalCount = byteToU8(Storage.get(PROPOSAL_COUNT));
-  const proposal = new Proposal(proposer, description, startBlock, endBlock);
+  const proposal = new Proposal(proposer, title, description, startBlock, endBlock);
   PROPOSALS.set(proposalCount, proposal);
   Storage.set(PROPOSAL_COUNT, u32ToBytes(proposalCount + 1));
 }
@@ -136,7 +140,7 @@ function createKey(proposalId: u32, voter: string): string {
 
 export function hasVoted(proposalId: u32, voter: string): bool {
   const key = createKey(proposalId, voter);
-  return HAS_VOTED.contains(key) ? HAS_VOTED.getSome(key) : false;
+  return HAS_VOTED.contains(key) ? true : false;
 }
 
 function voteToken(): IERC20 {

@@ -3,11 +3,11 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { deploySC, WalletClient, ISCData } from '@massalabs/massa-sc-deployer';
-import { Args, fromMAS } from '@massalabs/massa-web3';
+import { Args, BUILDNET_CHAIN_ID, DefaultProviderUrls, MAX_GAS_DEPLOYMENT, fromMAS } from '@massalabs/massa-web3';
 
 dotenv.config();
 
-const publicApi = 'https://buildnet.massa.net/api/v2';
+const publicApi = DefaultProviderUrls.BUILDNET
 
 const secretKey = process.env.WALLET_SECRET_KEY;
 if (!secretKey) {
@@ -26,13 +26,14 @@ const __dirname = path.dirname(path.dirname(__filename));
     deployerAccount,
     [
       {
-        data: readFileSync(path.join(__dirname, 'build', 'main.wasm')),
+        data: readFileSync(path.join(__dirname, 'build', 'MyGovernor.wasm')),
         coins: fromMAS(0.1),
-        args: new Args().addString('Test'),
-      } as ISCData,
+        args: new Args().addString('AS12Aw4tqoERAFqsav7pGTRdMiBwjQgZeWjcogVUatY7rVwtSuk3T'),
+      },
     ],
+    BUILDNET_CHAIN_ID,
     0n,
-    4_200_000_000n,
+    MAX_GAS_DEPLOYMENT,
     true,
   );
   process.exit(0);
