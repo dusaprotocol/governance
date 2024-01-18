@@ -11,6 +11,7 @@ import {
   Address,
   Context,
   Storage,
+  createEvent,
   generateEvent,
 } from '@massalabs/massa-as-sdk';
 import { PersistentMap, IERC20 } from '@dusalabs/core';
@@ -84,13 +85,22 @@ export function propose(bs: StaticArray<u8>): void {
   const args = new Args(bs);
   const title = args.nextString().unwrap();
   const description = args.nextString().unwrap();
-  const startBlock = args.nextU32().unwrap();
-  const endBlock = args.nextU32().unwrap();
+  const startBlock = args.nextU64().unwrap();
+  const endBlock = args.nextU64().unwrap();
   const proposer = Context.caller().toString();
   const proposalCount = byteToU8(Storage.get(PROPOSAL_COUNT));
-  const proposal = new Proposal(proposer, title, description, startBlock, endBlock);
+  const proposal = new Proposal(
+    proposer,
+    title,
+    description,
+    startBlock,
+    endBlock,
+  );
   PROPOSALS.set(proposalCount, proposal);
   Storage.set(PROPOSAL_COUNT, u32ToBytes(proposalCount + 1));
+
+  const event = createEvent('PROPOSE', [proposalCount.toString(), proposer]);
+  generateEvent(event);
 }
 
 export function vote(bs: StaticArray<u8>): void {
@@ -105,7 +115,10 @@ export function vote(bs: StaticArray<u8>): void {
 
   const voter = Context.caller();
   const votes = voteToken().balanceOf(voter);
-  const votingPower = u256.div(votes, u256.from(10 ** voteToken().decimals()));
+  const votingPower = u256.div(
+    votes,
+    u256.from(u64(10) ** u64(voteToken().decimals())),
+  );
   if (support) {
     proposal.forVotes += votingPower.toU64();
   } else {
@@ -113,6 +126,13 @@ export function vote(bs: StaticArray<u8>): void {
   }
   PROPOSALS.set(proposalId, proposal);
   HAS_VOTED.set(createKey(proposalId, voter.toString()), true);
+
+  const event = createEvent('VOTE', [
+    proposalId.toString(),
+    voter.toString(),
+    support.toString(),
+  ]);
+  generateEvent(event);
 }
 
 // HELPERS
