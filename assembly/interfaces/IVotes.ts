@@ -4,7 +4,7 @@ import { u256 } from 'as-bignum';
 /**
  * @dev Common interface for {ERC20Votes}, {ERC721Votes}, and other {Votes}-enabled contracts.
  */
-export class IVotes {
+export abstract class IVotes {
   /**
    * @dev Returns the current amount of votes that `account` has.
    */

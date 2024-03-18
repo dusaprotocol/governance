@@ -63,14 +63,14 @@ function _writeCheckpoint(
     Context.currentPeriod() < 2 ** 32,
     'Uni::_writeCheckpoint: block number exceeds 32 bits',
   );
-  const blockNumber: u32 = Context.currentPeriod();
+  const timestamp = Context.timestamp();
   const checkpoint = getCheckpoint(delegatee, nCheckpoints - 1);
-  if (nCheckpoints > 0 && checkpoint.fromBlock == blockNumber) {
+  if (nCheckpoints > 0 && checkpoint.from == timestamp) {
     checkpoint.votes = newVotes;
   } else {
     checkpoints.set(
       createCheckpointKey(delegatee, nCheckpoints),
-      new Checkpoint(blockNumber, newVotes),
+      new Checkpoint(timestamp, newVotes),
     );
     numCheckpoints.set(delegatee, nCheckpoints + 1);
   }

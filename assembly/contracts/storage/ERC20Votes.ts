@@ -7,17 +7,17 @@ export const delegates = new PersistentMap<string, string>('delegates');
 /// @notice A checkpoint for marking number of votes from a given block
 export class Checkpoint implements Serializable {
   constructor(
-    public fromBlock: u32 = 0,
+    public from: u64 = 0, // timestamp
     public votes: u64 = 0,
   ) {}
 
   serialize(): StaticArray<u8> {
-    return new Args().add(this.fromBlock).add(this.votes).serialize();
+    return new Args().add(this.from).add(this.votes).serialize();
   }
 
   deserialize(data: StaticArray<u8>, offset: i32): Result<i32> {
     const args = new Args(data, offset);
-    this.fromBlock = args.nextU32().unwrap();
+    this.from = args.nextU64().unwrap();
     this.votes = args.nextU64().unwrap();
     return new Result(args.offset);
   }
