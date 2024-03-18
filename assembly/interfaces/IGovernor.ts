@@ -1,4 +1,11 @@
-import { Args, NoArg, bytesToString, bytesToU256 } from '@massalabs/as-types';
+import {
+  Args,
+  NoArg,
+  byteToBool,
+  byteToU8,
+  bytesToString,
+  bytesToU256,
+} from '@massalabs/as-types';
 import { Address, call } from '@massalabs/massa-as-sdk';
 import { u256 } from 'as-bignum';
 import { ProposalState } from '../contracts/utils/Structs';
@@ -62,7 +69,14 @@ export class IGovernor {
     calldatas: StaticArray<u8>,
     descriptionHash: StaticArray<u8>,
   ): u256 {
-    throw new Error('Not implemented');
+    return bytesToU256(
+      call(
+        this._origin,
+        'hashProposal',
+        new Args().add(targets).add(values).add(calldatas).add(descriptionHash),
+        0,
+      ),
+    );
   }
 
   /**
@@ -70,7 +84,7 @@ export class IGovernor {
    * @dev Current state of a proposal, following Compound's convention
    */
   state(proposalId: u256): ProposalState {
-    throw new Error('Not implemented');
+    return byteToU8(call(this._origin, 'state', new Args().add(proposalId), 0));
   }
 
   /**
@@ -78,7 +92,7 @@ export class IGovernor {
    * @dev The number of votes required in order for a voter to become a proposer.
    */
   proposalThreshold(): u256 {
-    throw new Error('Not implemented');
+    return bytesToU256(call(this._origin, 'proposalThreshold', NoArg, 0));
   }
 
   /**
@@ -88,7 +102,9 @@ export class IGovernor {
    * following block.
    */
   proposalSnapshot(proposalId: u256): u256 {
-    throw new Error('Not implemented');
+    return bytesToU256(
+      call(this._origin, 'proposalSnapshot', new Args().add(proposalId), 0),
+    );
   }
 
   /**
@@ -97,7 +113,9 @@ export class IGovernor {
    * possible to cast a vote during this block.
    */
   proposalDeadline(proposalId: u256): u256 {
-    throw new Error('Not implemented');
+    return bytesToU256(
+      call(this._origin, 'proposalDeadline', new Args().add(proposalId), 0),
+    );
   }
 
   /**
@@ -105,7 +123,11 @@ export class IGovernor {
    * @dev The account that created a proposal.
    */
   proposalProposer(proposalId: u256): Address {
-    throw new Error('Not implemented');
+    return new Address(
+      bytesToString(
+        call(this._origin, 'proposalProposer', new Args().add(proposalId), 0),
+      ),
+    );
   }
 
   /**
@@ -115,7 +137,9 @@ export class IGovernor {
    * different. In most cases this will be a timestamp.
    */
   proposalEta(proposalId: u256): u256 {
-    throw new Error('Not implemented');
+    return bytesToU256(
+      call(this._origin, 'proposalEta', new Args().add(proposalId), 0),
+    );
   }
 
   /**
@@ -123,7 +147,9 @@ export class IGovernor {
    * @dev Whether a proposal needs to be queued before execution.
    */
   proposalNeedsQueuing(proposalId: u256): bool {
-    throw new Error('Not implemented');
+    return byteToBool(
+      call(this._origin, 'proposalNeedsQueuing', new Args().add(proposalId), 0),
+    );
   }
 
   /**

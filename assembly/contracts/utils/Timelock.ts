@@ -6,9 +6,16 @@ import {
   call,
   createEvent,
   generateEvent,
+  keccak256,
   transferCoins,
 } from '@massalabs/massa-as-sdk';
-import { PersistentMap } from '@massalabs/massa-as-sdk/assembly/collections';
+import {
+  ADMIN,
+  DELAY,
+  PENDING_ADMIN,
+  QUEUED_TRANSACTIONS,
+} from '../storage/Timelock';
+import { AbiEncode } from '@massalabs/massa-as-sdk/assembly/std/solidity_compat/';
 
 // CONSTANTS
 
@@ -16,14 +23,6 @@ const dayInMs = 14 * 24 * 3600 * 1000;
 const GRACE_PERIOD = 14 * dayInMs;
 const MINIMUM_DELAY = 2 * dayInMs;
 const MAXIMUM_DELAY = 30 * dayInMs;
-
-// STORAGE KEYS
-const ADMIN = stringToBytes('admin');
-const PENDING_ADMIN = stringToBytes('pendingAdmin');
-const DELAY = stringToBytes('delay');
-const QUEUED_TRANSACTIONS = new PersistentMap<string, boolean>(
-  'queuedTransactions',
-);
 
 export function constructor(admin: Address, delay: u64): void {
   assert(
@@ -94,12 +93,23 @@ export function queueTransaction(
     'Timelock::queueTransaction: Estimated execution block must satisfy delay.',
   );
 
-  // bytes32 txHash = keccak256(abi.encode(target, value, signature, data, eta));
+  const txHash = keccak256(
+    new AbiEncode()
+      .add(target)
+      .add(value)
+      .add(signature)
+      .add(data)
+      .add(eta)
+      .serialize(),
+  );
   // queuedTransactions[txHash] = true;
 
-  // emit QueueTransaction(txHash, target, value, signature, data, eta);
-  // return txHash;
-  return [];
+  generateEvent(
+    createEvent('QueueTransaction', [
+      (txHash, target, value, signature, data, eta),
+    ]),
+  );
+  return txHash;
 }
 
 export function cancelTransaction(
@@ -114,7 +124,15 @@ export function cancelTransaction(
     'Timelock::cancelTransaction: Call must come from admin.',
   );
 
-  // bytes32 txHash = keccak256(abi.encode(target, value, signature, data, eta));
+  const txHash = keccak256(
+    new AbiEncode()
+      .add(target)
+      .add(value)
+      .add(signature)
+      .add(data)
+      .add(eta)
+      .serialize(),
+  );
   // queuedTransactions[txHash] = false;
 
   // emit CancelTransaction(txHash, target, value, signature, data, eta);
@@ -134,10 +152,17 @@ export function executeTransaction(
     'Timelock::executeTransaction: Call must come from admin.',
   );
 
-  // bytes32 txHash = keccak256(abi.encode(target, value, signature, data, eta));
-  const txHash = '';
+  const txHash = keccak256(
+    new AbiEncode()
+      .add(target)
+      .add(value)
+      .add(signature)
+      .add(data)
+      .add(eta)
+      .serialize(),
+  );
   assert(
-    QUEUED_TRANSACTIONS.get(txHash),
+    QUEUED_TRANSACTIONS.get(txHash, false),
     "Timelock::executeTransaction: Transaction hasn't been queued.",
   );
   assert(
