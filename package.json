@@ -37,14 +37,12 @@
         "dotenv": "^16.3.1",
         "prettier": "^3.1.0",
         "tslib": "^2.6.2",
+        "tsx": "^4.16.5",
         "typescript": "^5.3.2"
     },
     "type": "module",
     "prettier": "@massalabs/prettier-config-as",
     "engines": {
         "node": ">=16"
-    },
-    "dependencies": {
-        "tsx": "^4.16.5"
     }
 }
