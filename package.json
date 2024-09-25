@@ -29,7 +29,7 @@
         "@massalabs/massa-sc-deployer": "^1.2.0",
         "@massalabs/massa-web3": "^2.2.7",
         "@massalabs/prettier-config-as": "^0.0.2",
-        "@massalabs/sc-standards": "^0.1.1",
+        "@massalabs/sc-standards": "^1.2.2",
         "@types/node": "^20.10.3",
         "@types/yargs": "^17.0.32",
         "as-bignum": "github:massalabs/as-bignum#0105eb596b2fa707c00712e811a2efdfcb8a9848",
