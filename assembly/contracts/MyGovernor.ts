@@ -16,6 +16,10 @@ import {
 } from '@massalabs/massa-as-sdk';
 import { PersistentMap, IERC20 } from '@dusalabs/core';
 import { u256 } from 'as-bignum/assembly/integer/u256';
+import {
+  setOwner,
+  onlyOwner,
+} from '@massalabs/sc-standards/assembly/contracts/utils/ownership';
 
 // STORAGE
 
@@ -72,11 +76,24 @@ export const HAS_VOTED = new PersistentMap<string, bool>('v');
 // CONSTRUCTOR
 
 export function constructor(bs: StaticArray<u8>): void {
-  // assert(Context.isDeployingContract());
+  assert(Context.isDeployingContract(), 'already init');
+
   const voteToken = new Args(bs).nextString().unwrap();
   Storage.set(VOTE_TOKEN, voteToken);
-  Storage.set(PROPOSE_THRESHOLD, u8toByte(3)); // 3%
-  Storage.set(PROPOSAL_COUNT, u32ToBytes(0));
+  Storage.set(PROPOSE_THRESHOLD, u8toByte(10)); // 10%
+  Storage.set(PROPOSAL_COUNT, u8toByte(0));
+
+  setOwner(new Args().add(Context.transactionCreator()).serialize());
+}
+
+// OWNER
+
+export function updateProposeThreshold(bs: StaticArray<u8>): void {
+  onlyOwner();
+
+  const newThreshold = new Args(bs).nextU8().unwrap();
+  assert(newThreshold < 100, 'invalid threshold');
+  Storage.set(PROPOSE_THRESHOLD, u8toByte(newThreshold));
 }
 
 export function propose(bs: StaticArray<u8>): void {
@@ -88,7 +105,7 @@ export function propose(bs: StaticArray<u8>): void {
   const startBlock = args.nextU64().unwrap();
   const endBlock = args.nextU64().unwrap();
   const proposer = Context.caller().toString();
-  const proposalCount = byteToU8(Storage.get(PROPOSAL_COUNT));
+  const currProposalCount = proposalCount();
   const proposal = new Proposal(
     proposer,
     title,
@@ -96,10 +113,13 @@ export function propose(bs: StaticArray<u8>): void {
     startBlock,
     endBlock,
   );
-  PROPOSALS.set(proposalCount, proposal);
-  Storage.set(PROPOSAL_COUNT, u32ToBytes(proposalCount + 1));
+  PROPOSALS.set(currProposalCount, proposal);
+  Storage.set(PROPOSAL_COUNT, u32ToBytes(currProposalCount + 1));
 
-  const event = createEvent('PROPOSE', [proposalCount.toString(), proposer]);
+  const event = createEvent('PROPOSE', [
+    currProposalCount.toString(),
+    proposer,
+  ]);
   generateEvent(event);
 }
 
@@ -141,7 +161,7 @@ export function canVote(proposalId: u32): bool {
   return (
     voteToken().balanceOf(Context.caller()) > u256.Zero &&
     !hasVoted(proposalId, Context.caller().toString()) &&
-    proposalId <= byteToU8(Storage.get(PROPOSAL_COUNT))
+    proposalId <= proposalCount()
   );
 }
 
@@ -151,7 +171,7 @@ export function canPropose(): bool {
     u256.mul(totalSupply, u256.from(byteToU8(Storage.get(PROPOSE_THRESHOLD)))),
     u256.from(100),
   );
-  return voteToken().balanceOf(Context.caller()) > threshold;
+  return voteToken().balanceOf(Context.caller()) >= threshold;
 }
 
 function createKey(proposalId: u32, voter: string): string {
@@ -165,4 +185,8 @@ export function hasVoted(proposalId: u32, voter: string): bool {
 
 function voteToken(): IERC20 {
   return new IERC20(new Address(Storage.get(VOTE_TOKEN)));
+}
+
+function proposalCount(): u8 {
+  return byteToU8(Storage.get(PROPOSAL_COUNT));
 }
