@@ -7,7 +7,7 @@ import {
   bytesToU256,
 } from '@massalabs/as-types';
 import { Address, call } from '@massalabs/massa-as-sdk';
-import { u256 } from 'as-bignum';
+import { u256 } from 'as-bignum/assembly/integer/u256';
 import { ProposalState } from '../contracts/utils/Structs';
 
 /**
@@ -54,8 +54,7 @@ export class IGovernor {
    * https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams[`URLSearchParams`]
    * JavaScript class.
    */
-  // solhint-disable-next-line func-name-mixedcase
-  COUNTING_MODE() {
+  COUNTING_MODE(): string {
     return bytesToString(call(this._origin, 'COUNTING_MODE', NoArg, 0));
   }
 

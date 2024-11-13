@@ -1,5 +1,5 @@
 import { Address } from '@massalabs/massa-as-sdk';
-import { u256 } from 'as-bignum';
+import { u256 } from 'as-bignum/assembly/integer/u256';
 
 /**
  * @dev Common interface for {ERC20Votes}, {ERC721Votes}, and other {Votes}-enabled contracts.

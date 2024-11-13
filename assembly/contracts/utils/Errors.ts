@@ -18,30 +18,30 @@ export const GovernorInvalidProposalLength = (
 /**
  * @dev The vote was already cast.
  */
-export const GovernorAlreadyCastVote = (voter: Address) =>
+export const GovernorAlreadyCastVote = (voter: Address): string =>
   `GovernorAlreadyCastVote: ${voter}`;
 
 /**
  * @dev Token deposits are disabled in this contract.
  */
-export const GovernorDisabledDeposit = () => `GovernorDisabledDeposit`;
+export const GovernorDisabledDeposit = (): string => `GovernorDisabledDeposit`;
 
 /**
  * @dev The `account` is not a proposer.
  */
-export const GovernorOnlyProposer = (account: Address) =>
+export const GovernorOnlyProposer = (account: Address): string =>
   `GovernorOnlyProposer: ${account}`;
 
 /**
  * @dev The `account` is not the governance executor.
  */
-export const GovernorOnlyExecutor = (account: Address) =>
+export const GovernorOnlyExecutor = (account: Address): string =>
   `GovernorOnlyExecutor: ${account}`;
 
 /**
  * @dev The `proposalId` doesn't exist.
  */
-export const GovernorNonexistentProposal = (proposalId: u256) =>
+export const GovernorNonexistentProposal = (proposalId: u256): string =>
   `GovernorNonexistentProposal: ${u256ToString(proposalId)}`;
 
 /**
@@ -58,7 +58,7 @@ export const GovernorUnexpectedProposalState = (
   proposalId: u256,
   current: ProposalState,
   expectedStates: StaticArray<u8>,
-) =>
+): string =>
   `GovernorUnexpectedProposalState: ${u256ToString(
     proposalId,
   )}, ${current}, ${expectedStates}`;
@@ -66,7 +66,7 @@ export const GovernorUnexpectedProposalState = (
 /**
  * @dev The voting period set is not a valid period.
  */
-export const GovernorInvalidVotingPeriod = (votingPeriod: u256) =>
+export const GovernorInvalidVotingPeriod = (votingPeriod: u256): string =>
   `GovernorInvalidVotingPeriod: ${u256ToString(votingPeriod)}`;
 
 /**
@@ -76,7 +76,7 @@ export const GovernorInsufficientProposerVotes = (
   proposer: Address,
   votes: u256,
   threshold: u256,
-) =>
+): string =>
   `GovernorInsufficientProposerVotes: ${proposer}, ${u256ToString(
     votes,
   )}, ${u256ToString(threshold)}`;
@@ -84,34 +84,35 @@ export const GovernorInsufficientProposerVotes = (
 /**
  * @dev The `proposer` is not allowed to create a proposal.
  */
-export const GovernorRestrictedProposer = (proposer: Address) =>
+export const GovernorRestrictedProposer = (proposer: Address): string =>
   `GovernorRestrictedProposer: ${proposer}`;
 
 /**
  * @dev The vote type used is not valid for the corresponding counting module.
  */
-export const GovernorInvalidVoteType = () => `GovernorInvalidVoteType`;
+export const GovernorInvalidVoteType = (): string => `GovernorInvalidVoteType`;
 
 /**
  * @dev Queue operation is not implemented for this governor. Execute should be called directly.
  */
-export const GovernorQueueNotImplemented = () => `GovernorQueueNotImplemented`;
+export const GovernorQueueNotImplemented = (): string =>
+  `GovernorQueueNotImplemented`;
 
 /**
  * @dev The proposal hasn't been queued yet.
  */
-export const GovernorNotQueuedProposal = (proposalId: u256) =>
+export const GovernorNotQueuedProposal = (proposalId: u256): string =>
   `GovernorNotQueuedProposal: ${u256ToString(proposalId)}`;
 
 /**
  * @dev The proposal has already been queued.
  */
-export const GovernorAlreadyQueuedProposal = (proposalId: u256) =>
+export const GovernorAlreadyQueuedProposal = (proposalId: u256): string =>
   `GovernorAlreadyQueuedProposal: ${u256ToString(proposalId)}`;
 
 /**
  * @dev The provided signature is not valid for the expected `voter`.
  * If the `voter` is a contract, the signature is not valid using {IERC1271-isValidSignature}.
  */
-export const GovernorInvalidSignature = (voter: Address) =>
+export const GovernorInvalidSignature = (voter: Address): string =>
   `GovernorInvalidSignature: ${voter}`;

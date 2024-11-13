@@ -1,6 +1,6 @@
 import { IVotes } from './IVotes';
 import { Address, call } from '@massalabs/massa-as-sdk';
-import { u256 } from 'as-bignum';
+import { u256 } from 'as-bignum/assembly/integer/u256';
 import {
   Args,
   bytesToString,

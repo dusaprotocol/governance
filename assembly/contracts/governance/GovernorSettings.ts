@@ -1,6 +1,6 @@
 import { bytesToU256, stringToBytes, u256ToBytes } from '@massalabs/as-types';
 import { Context, Storage } from '@massalabs/massa-as-sdk';
-import { u256 } from 'as-bignum';
+import { u256 } from 'as-bignum/assembly/integer/u256';
 
 const _votingDelay = stringToBytes('votingDelay');
 const _votingPeriod = stringToBytes('votingPeriod');

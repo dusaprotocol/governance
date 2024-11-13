@@ -1,4 +1,4 @@
-import { Args, SafeMath, stringToBytes, u64ToBytes } from '@massalabs/as-types';
+import { Args, bytesToString, SafeMath, u64ToBytes } from '@massalabs/as-types';
 import {
   Address,
   Context,
@@ -15,11 +15,16 @@ import {
   PENDING_ADMIN,
   QUEUED_TRANSACTIONS,
 } from '../storage/Timelock';
-import { AbiEncode } from '@massalabs/massa-as-sdk/assembly/std/solidity_compat/';
+
+import {
+  AbiEncode,
+  Bytes32,
+} from '@massalabs/massa-as-sdk/assembly/std/solidity_compat/';
+// support uint (u8-u256), string and Bytes32
 
 // CONSTANTS
 
-const dayInMs = 14 * 24 * 3600 * 1000;
+const dayInMs: u64 = 14 * 24 * 3600 * 1000;
 const GRACE_PERIOD = 14 * dayInMs;
 const MINIMUM_DELAY = 2 * dayInMs;
 const MAXIMUM_DELAY = 30 * dayInMs;
@@ -93,20 +98,17 @@ export function queueTransaction(
     'Timelock::queueTransaction: Estimated execution block must satisfy delay.',
   );
 
-  const txHash = keccak256(
-    new AbiEncode()
-      .add(target)
-      .add(value)
-      .add(signature)
-      .add(data)
-      .add(eta)
-      .serialize(),
-  );
+  const txHash = generateHash(target, value, signature, data, eta);
   // queuedTransactions[txHash] = true;
 
   generateEvent(
     createEvent('QueueTransaction', [
-      (txHash, target, value, signature, data, eta),
+      bytesToString(txHash),
+      target.toString(),
+      value.toString(),
+      signature,
+      bytesToString(data),
+      eta.toString(),
     ]),
   );
   return txHash;
@@ -124,15 +126,7 @@ export function cancelTransaction(
     'Timelock::cancelTransaction: Call must come from admin.',
   );
 
-  const txHash = keccak256(
-    new AbiEncode()
-      .add(target)
-      .add(value)
-      .add(signature)
-      .add(data)
-      .add(eta)
-      .serialize(),
-  );
+  const txHash = generateHash(target, value, signature, data, eta);
   // queuedTransactions[txHash] = false;
 
   // emit CancelTransaction(txHash, target, value, signature, data, eta);
@@ -152,15 +146,7 @@ export function executeTransaction(
     'Timelock::executeTransaction: Call must come from admin.',
   );
 
-  const txHash = keccak256(
-    new AbiEncode()
-      .add(target)
-      .add(value)
-      .add(signature)
-      .add(data)
-      .add(eta)
-      .serialize(),
-  );
+  const txHash = generateHash(target, value, signature, data, eta);
   assert(
     QUEUED_TRANSACTIONS.get(txHash, false),
     "Timelock::executeTransaction: Transaction hasn't been queued.",
@@ -221,4 +207,24 @@ function pendingAdmin(): Address {
   return new Args(Storage.get(PENDING_ADMIN))
     .nextSerializable<Address>()
     .unwrap();
+}
+
+// HELPERS
+
+function generateHash(
+  target: Address,
+  value: u64,
+  signature: string,
+  data: StaticArray<u8>,
+  eta: u64,
+): StaticArray<u8> {
+  return keccak256(
+    new AbiEncode()
+      .add(target.toString())
+      .add(value)
+      .add(signature)
+      .add(new Bytes32().add(data))
+      .add(eta)
+      .serialize(),
+  );
 }

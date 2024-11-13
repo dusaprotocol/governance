@@ -6,7 +6,7 @@ import {
   transferCoins,
 } from '@massalabs/massa-as-sdk';
 import { IERC20Votes } from '../interfaces/IERC20Votes';
-import { u256 } from 'as-bignum';
+import { u256 } from 'as-bignum/assembly/integer/u256';
 import { IGovernor } from '../interfaces/IGovernor';
 
 export function main(bs: StaticArray<u8>): void {
