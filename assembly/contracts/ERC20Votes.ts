@@ -55,7 +55,7 @@ function _moveDelegates(srcRep: string, dstRep: string, amount: u64): void {
 
 function _writeCheckpoint(
   delegatee: string,
-  nCheckpoints: u32,
+  nCheckpoints: u64,
   oldVotes: u64,
   newVotes: u64,
 ): void {

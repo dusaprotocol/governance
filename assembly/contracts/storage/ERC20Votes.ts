@@ -26,12 +26,12 @@ export class Checkpoint implements Serializable {
 /// @notice A record of votes checkpoints for each account, by index
 /// @dev key is a combination of account address and checkpoint index
 export const checkpoints = new PersistentMap<string, Checkpoint>('checkpoints');
-export const createCheckpointKey = (account: string, index: u32): string =>
-  `${account}-${index}`;
-export const getCheckpoint = (account: string, index: u32): Checkpoint =>
+export const createCheckpointKey = (account: string, index: u64): string =>
+  `${account}-${index.toString()}`;
+export const getCheckpoint = (account: string, index: u64): Checkpoint =>
   checkpoints.getSome(createCheckpointKey(account, index));
 
 /// @notice The number of checkpoints for each account
-export const numCheckpoints = new PersistentMap<string, u32>('numCheckpoints');
-export const getNumCheckpoints = (account: string): u32 =>
+export const numCheckpoints = new PersistentMap<string, u64>('numCheckpoints');
+export const getNumCheckpoints = (account: string): u64 =>
   numCheckpoints.contains(account) ? numCheckpoints.getSome(account) : 0;
