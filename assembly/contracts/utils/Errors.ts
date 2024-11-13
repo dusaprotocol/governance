@@ -2,6 +2,7 @@ import { u256ToString } from '@dusalabs/core';
 import { Address } from '@massalabs/massa-as-sdk';
 import { u256 } from 'as-bignum/assembly/integer/u256';
 import { ProposalState } from './Structs';
+import { bytesToString } from '@massalabs/as-types';
 
 /**
  * @dev Empty proposal or a mismatch between the parameters length for a proposal call.
@@ -61,7 +62,7 @@ export const GovernorUnexpectedProposalState = (
 ): string =>
   `GovernorUnexpectedProposalState: ${u256ToString(
     proposalId,
-  )}, ${current}, ${expectedStates}`;
+  )}, ${current.toString()}, ${bytesToString(expectedStates)}`;
 
 /**
  * @dev The voting period set is not a valid period.

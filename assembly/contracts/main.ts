@@ -14,7 +14,7 @@ export function main(bs: StaticArray<u8>): void {
 }
 
 export function constructor(bs: StaticArray<u8>): void {
-  const erc20Wasm: StaticArray<u8> = fileToByteArray('build/ERC20Votes.ts');
+  const erc20Wasm: StaticArray<u8> = fileToByteArray('build/ERC20Votes.wasm');
   const erc20Votes: IERC20Votes = new IERC20Votes(createSC(erc20Wasm));
   transferCoins(erc20Votes._origin, 5 * ONE_COIN);
   erc20Votes.init(
@@ -25,8 +25,8 @@ export function constructor(bs: StaticArray<u8>): void {
   );
 
   const governorWasm: StaticArray<u8> = fileToByteArray(
-    'build/GovernorAlpha.ts',
+    'build/GovernorBravo.wasm',
   );
-  const governorAlpha: IGovernor = new IGovernor(createSC(governorWasm));
-  generateEvent(governorAlpha.version());
+  const governorBravo: IGovernor = new IGovernor(createSC(governorWasm));
+  generateEvent(governorBravo.version());
 }
