@@ -1,1 +1,1 @@
-function quorumVotes() {}
+function quorumVotes(): void {}

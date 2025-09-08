@@ -9,7 +9,7 @@ export abstract class IVotes {
    * @dev Returns the current amount of votes that `account` has.
    */
   getVotes(account: Address): u256 {
-    return u256.Zero;
+    throw new Error('Not implemented');
   }
 
   /**
@@ -17,7 +17,7 @@ export abstract class IVotes {
    * configured to use block numbers, this will return the value at the end of the corresponding block.
    */
   getPastVotes(account: Address, timepoint: u256): u256 {
-    return u256.Zero;
+    throw new Error('Not implemented');
   }
 
   /**
@@ -29,14 +29,14 @@ export abstract class IVotes {
    * vote.
    */
   getPastTotalSupply(timepoint: u256): u256 {
-    return u256.Zero;
+    throw new Error('Not implemented');
   }
 
   /**
    * @dev Returns the delegate that `account` has chosen.
    */
   delegates(account: Address): Address {
-    return new Address('');
+    throw new Error('Not implemented');
   }
 
   /**
